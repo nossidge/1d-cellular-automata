@@ -18,6 +18,9 @@ end
 ################################################################################
 
 class PicFromNumbers
+	CHARS = ('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+	         'abcdefghijklmnopqrstuvwxyz').split('')
+	
 	attr_accessor :baseNum
 	attr_accessor :colourInvert
 	attr_accessor :imageFile
@@ -58,8 +61,10 @@ class PicFromNumbers
 		@highestNum = 0
 		highestLen = 0
 		@inputTextArray.each do |i|
-			num = i.split('').sort.uniq[-1].to_i
-			len = i.split('').length
+			iSplit = i.split('')
+			num = iSplit.sort.uniq.map{ |j| CHARS.index(j) }.sort[-1]
+			len = iSplit.length
+			
 			@highestNum = num if num > @highestNum
 			highestLen = len if len > highestLen
 		end
@@ -74,18 +79,21 @@ class PicFromNumbers
 	
 	def generate_image()
 		set_dimensions()
+		
+		# Create an image from scratch, save as an interlaced PNG.
 		png = ChunkyPNG::Image.new(@xLength, @yLength, ChunkyPNG::Color::TRANSPARENT)
 
-		# Loop along the string array and write each char as a pixel.
+		# Loop along the string array and write each char as a square.
 		iLine = 0
 		@inputTextArray.each do |line|
 			iChar = 0
 			line.split('').each do |char|
 				
 				# Colours.
-				colourR = (char.to_f / @highestNum * @colourR).to_i
-				colourG = (char.to_f / @highestNum * @colourG).to_i
-				colourB = (char.to_f / @highestNum * @colourB).to_i
+				multiplier = CHARS.index(char).to_f / @highestNum
+				colourR = (multiplier * @colourR).to_i
+				colourG = (multiplier * @colourG).to_i
+				colourB = (multiplier * @colourB).to_i
 				colour = ChunkyPNG::Color.rgba(colourR, colourG, colourB, 255)
 				
 				# Draw each square.
@@ -127,7 +135,7 @@ if __FILE__ == $0
 	optparse = OptionParser.new do |opts|
 		
 		# Set a banner, displayed at the top of the help screen.
-		opts.banner = "Usage:  automata.rb -s'0123456789' | pic.rb [options]"
+		opts.banner = "Usage:  automata.rb -s'0123456789' | num_to_pic.rb [options]"
 
 		opts.on('-p', '--pixel NUMBER', Integer, 'Size of pixels (zoom)') do |n|
 			options[:pixelSize] = n if 0 < n
@@ -164,11 +172,11 @@ if __FILE__ == $0
 
 	# Get piped info.
 	lines = []
-	lines << '010000001000000000010'
-	lines << '010000000100000000010'
-	lines << '010000000010000000010'
-	lines << '010000000001000000010'
-	lines << '010000000000100000010'
+	lines << '01000000A0000000000a0'
+	lines << '010X00000A000000000B0'
+	lines << '0100000000A00000000a0'
+	lines << '01000000000A0000X00a0'
+	lines << '0X0000000000A000000a0'
 	lines = []
 	ARGF.each do |line|
 		lines << line.strip
@@ -188,9 +196,3 @@ if __FILE__ == $0
 end
 
 ################################################################################
-
-__END__
-
-ToDo:
-more than just 0-9 states. Maybe 0-z (36) or 0-Z (62)?
-
