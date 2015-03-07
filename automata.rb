@@ -46,19 +46,33 @@ end
 ################################################################################
 
 class Cells
+	CHARS = ('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+	         'abcdefghijklmnopqrstuvwxyz').split('')
+
+	# The number of cells in the neighbourhood.
+	# I haven't experimented with values other than 3 yet.
 	Neighbours = 3
 	
+	# Are we comparing far-left cells with far-right cells?
 	attr_accessor :wrap
+
+	# The rule of the automaton in base 10.
 	attr_accessor :rule
+
+	# The rule of the automaton in whatever base that @stateCount is set to.
+	# This isn't necessarily binary, but it's only a var name...
 	attr_accessor :ruleBin
 	
+	# This will be set to true if the calculated next state is the same as
+	#   the current state.
 	attr_reader :duplicateState
 	
-	# @cellArray is an array of integers, so we can use it as state.
-	# @stateChars will be an array of characters, to use to display the state.
-	# (This will replace @stateSymbols)
+	# @cellArray is an array of integers, representing the current generation.
 	
-  def initialize(stateCount=2,cellCount=11,stateSymbols=' o',rule=nil)
+	# @stateSymbols is an array of strings (usually single characters), to
+	#   display the state.
+
+  def initialize(stateCount=2,cellCount=11,stateSymbols=CHARS,rule=nil)
     @stateCount = stateCount
     @cellCount = cellCount.to_i
 		@stateSymbols = stateSymbols
@@ -87,6 +101,7 @@ class Cells
 		@ruleBin = @rule.to_s(@stateCount,state_table_count)
 		@rule
 	end
+	
 	# This stuff is just for Binary rules, currently.
 	# http://plato.stanford.edu/entries/cellular-automata/supplement.html
 	def coolRule
@@ -109,6 +124,7 @@ class Cells
 		@cellArray[elem]
 	end
 	
+	# Calculate the cells of the next generation.
 	def computeNext
 		stateNeighbours = '000'
 		nextState = false
@@ -320,17 +336,15 @@ optparse = OptionParser.new do |opts|
 	opts.on('-x', '--number NUMBER', Integer, 'Number of cells (width of the row)') do |n|
 		options[:cellCount] = n if 0 < n
 	end
-#	opts.on('-l', '--lines NUMBER', 'Number of generation lines to display') do |n|
 	opts.on('-y', '--lines NUMBER', Integer, 'Number of generation lines to display') do |n|
 		options[:outputLineCount] = n if 0 < n
 	end
-#	opts.on('-b', '--base NUMBER', 'Base or radix to use. So 2 for binary, 3 for ternary...') do |n|
 	opts.on('-z', '--base NUMBER', Integer, 'Base or radix to use. So 2 for binary, 3 for ternary...') do |n|
 		options[:stateCount] = n if 1 < n
 	end
 	opts.separator nil
 	
-#	opts.on('-L', '--begin NUMBER', "Line number to begin display. Won't show gens before this") do |n|
+	# Line stuff.
 	opts.on('-Y', '--begin NUMBER', Integer, "Line number to begin display. Won't show gens before this") do |n|
 		options[:outputLineBegin] = n if 0 < n
 	end
@@ -349,11 +363,9 @@ optparse = OptionParser.new do |opts|
 	opts.separator nil
 	
 	# Rule stuff.
-#	opts.on('-r', '--rule NUMBER', 'Elementary cellular automaton Rule number') do |n|
 	opts.on('-u', '--rule NUMBER', Integer, 'Elementary cellular automaton Rule number') do |n|
 		options[:ruleNumber] = n if 0 <= n
 	end
-#	opts.on('-c', '--rulecool', "Use a random 'cool' Rule. These are uniform and pretty") do |b|
 	opts.on('-U', '--rulecool', "Use a random 'cool' Rule. These are uniform and pretty") do |b|
 		options[:ruleCool] = !options[:ruleCool]
 	end
@@ -363,7 +375,6 @@ optparse = OptionParser.new do |opts|
 	opts.on('-i', '--init STRING', 'Initial state of the automaton') do |s|
 		options[:stateValue] = s
 	end
-#	opts.on('-C', '--centred', 'Centre the initial state string') do |b|
 	opts.on('-c', '--centred', 'Centre the initial state string') do |b|
 		options[:stateCentred] = !options[:stateCentred]
 	end
@@ -376,11 +387,9 @@ optparse = OptionParser.new do |opts|
 	opts.on('-S', '--symmetry', 'Random initial states are symetrical') do |b|
 		options[:stateRandomMirrored] = !options[:stateRandomMirrored]
 	end
-#	opts.on('-y', '--vert-symmetry', 'Output lines will be reflected vertically') do |b|
 	opts.on('-t', '--vert-symmetry', 'Output lines will be reflected vertically') do |b|
 		options[:vertSymmetry] = !options[:vertSymmetry]
 	end
-#	opts.on('-Y', '--horiz-symmetry', 'Output lines will be reflected horizontally') do |b|
 	opts.on('-T', '--horiz-symmetry', 'Output lines will be reflected horizontally') do |b|
 		options[:horizSymmetry] = !options[:horizSymmetry]
 	end
@@ -430,9 +439,6 @@ optparse = OptionParser.new do |opts|
 	end
 	opts.separator ' '*39 + defaultNamesToOutput.map{|i|"'#{i}'"}.join(' ')
 	opts.separator nil
-#			puts '  Default setting invalid. Please enter one from this list:'
-#			puts '  ' + defaultNamesToOutput.map{|i|"'#{i}'"}.join(' ')
-#			exit
 	
 	# pic stuff.
 	opts.on('-I', '--image', 'Output to a picture file') do |s|
@@ -476,7 +482,6 @@ if options[:ruleNumber] != nil
 else
 	cells = Cells.new(options[:stateCount],options[:cellCount],options[:stateSymbols])
 	cells.coolRule if options[:ruleCool]
-#	puts 'Rule used: ' + cells.rule.to_s
 end
 
 # Edge of row wrapping.
@@ -604,23 +609,16 @@ else
 	puts finalOutputArray
 end
 
-#puts 'Rule used: ' + cells.rule.to_s
-
-
 # ToDo: Remove debug stuff!
 File.open('~rules.txt', 'a+') do |f|
 	f.puts cells.rule.to_s
 end
-
-#puts cells.state_table
 
 ################################################################################
 
 __END__
 
 ToDo:
-
-int array array, instead of string array
 
 -i should be by state, not symbol.
 
@@ -639,4 +637,3 @@ Probably should read these in from a file also.
 Also, think of a better name than 'cool rules'.
 
 OOP - Make this an includable class as well as console runnable.
-
