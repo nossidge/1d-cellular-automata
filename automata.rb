@@ -199,8 +199,7 @@ options[:stateCount] = 2
 options[:stateSymbols] = ' o0Oo0Oo0O'
 options[:stateSymbols] = ' o()[]{}<>\/'
 options[:stateSymbols] = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-options[:stateRandomProb] = '0111'
-options[:stateRandomProb] = '01'
+options[:stateRandomProb] = nil
 
 options[:wrap] = false
 options[:reverse] = false
@@ -299,7 +298,7 @@ def applyDefaultSettings(options,defaultName)
 		options[:reverse] = true
 		options[:outputLoopForever] = true
 		options[:initialStateLength] = options[:cellCount] - 10
-		options[:stateRandomProb] = '011111111111111'
+		options[:stateRandomProb] = [1,14]
 	end
 	if defaultName == 'giza2'
 		options[:ruleNumber] = 164
@@ -313,7 +312,7 @@ def applyDefaultSettings(options,defaultName)
 		options[:wrap] = true
 		options[:reverse] = true
 		options[:outputLoopForever] = true
-		options[:stateRandomProb] = '001'
+		options[:stateRandomProb] = [2,1]
 	end
 	
 	# Curtains?
@@ -378,9 +377,27 @@ optparse = OptionParser.new do |opts|
 	opts.on('-c', '--centred', 'Centre the initial state string') do |b|
 		options[:stateCentred] = !options[:stateCentred]
 	end
-	opts.on('-r', '--random', 'Randomise the initial state') do |b|
+
+	# Randomised initial state. Optional probability weight array.
+	opts.on('-r', '--random [1,2,0]', Array, 'Randomise the initial state') do |list|
 		options[:stateRandom] = !options[:stateRandom]
+		if options[:stateRandom] and list
+			options[:stateRandomProb] = []
+
+			# Error if an argument is not an integer.
+			list.each do |elem|
+				begin
+					options[:stateRandomProb] << Integer(elem).abs
+				rescue ArgumentError => e
+					raise OptionParser::ParseError
+				end
+			end
+		end
 	end
+	opts.separator ' '*39 + "Argument is probability of random state values:"
+	opts.separator ' '*39 + "  -p1,1   = even chance between two states (default)"
+	opts.separator ' '*39 + "  -p1,3   = 1/4 '0' state, 3/4 '1' state"
+	opts.separator ' '*39 + "  -p1,3,2 = 1/6 '0' state, 3/6 '1' state, 2/6 '2' state"
 	opts.separator nil
 	
 #	Symmetry stuff.
@@ -420,16 +437,6 @@ optparse = OptionParser.new do |opts|
 		options[:stateSymbols] = s
 	end
 	opts.separator ' '*39 + "-s' #'  means that state 0 is ' ', state 1 is '#'"
-	opts.separator nil
-	
-	# Random initial state probabilites
-	opts.on('-p', '--prob STRING', 'Probability of random state values') do |s|
-		options[:stateRandomProb] = s
-	end
-	opts.separator ' '*39 + "Expressed in state numbers:"
-	opts.separator ' '*39 + "  -p'01'     = even distribution"
-	opts.separator ' '*39 + "  -p'0111'   = 3/4 '1' state"
-	opts.separator ' '*39 + "  -p'011122' = 1/6 '0' state, 3/6 '1' state, 2/6 '2' state"
 	opts.separator nil
 	
 	# Default settings.
@@ -474,6 +481,11 @@ end
 
 ################################################################################
 
+# Default probablility is even for all states.
+if options[:stateRandom] and not options[:stateRandomProb]
+	options[:stateRandomProb] = Array.new(options[:stateCount]){ |i| 1 }
+end
+
 # Use a specific rule, if one is specified.
 if options[:ruleNumber] != nil
 	cells = Cells.new(options[:stateCount],options[:cellCount],options[:stateSymbols],options[:ruleNumber])
@@ -502,8 +514,13 @@ if options[:stateValue] or not options[:stateRandom]
 # Randomly assign states.
 else
 	
-	# Split the string and use '0' and '1' as options.
-	statePosibilites = options[:stateRandomProb].split('')
+	# Extend stateRandomProb to a state array based on weight.
+	statePosibilites = []
+	options[:stateRandomProb].each_with_index do |count,state|
+		count.times do |i|
+			statePosibilites << state
+		end
+	end
 
 	# Use initialStateLength if it is set.
 	loops = options[:initialStateLength] ? options[:initialStateLength] : options[:cellCount]
@@ -526,7 +543,7 @@ else
 	# Not mirrored.
 	else
 		(0...loops).each do |i|
-			stateString += statePosibilites.sample
+			stateString += statePosibilites.sample.to_s
 		end
 	end
 	
@@ -625,9 +642,6 @@ ToDo:
 Rotate by right angles (transpose)
 
 Options -T and -m/-M do the same thing...
-
--p NUMBER should be -r [NUMBER]
--r option should be in int array form for: -r0,5,2
 
 -d default options.
 Probably should read them in from a file.
