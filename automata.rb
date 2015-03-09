@@ -43,6 +43,13 @@ def to_state_string(stateValue,stateSymbols)
 	stateString
 end
 
+# Rotate a 2d array by 90 degrees.
+class Array
+  def rotate_right
+    transpose.map &:reverse
+  end
+end
+
 ################################################################################
 
 class Cells
@@ -207,6 +214,7 @@ options[:vertSymmetry] = false
 options[:horizSymmetry] = false
 
 options[:initialStateLength] = nil
+options[:rotations] = 0
 
 # This is for num_to_pic.rb
 options[:image] = false
@@ -410,11 +418,14 @@ optparse = OptionParser.new do |opts|
 	opts.on('-T', '--horiz-symmetry', 'Output lines will be reflected horizontally') do |b|
 		options[:horizSymmetry] = !options[:horizSymmetry]
 	end
+	opts.on('-o', '--rotate NUMBER', Integer, 'Rotate by 90 degrees') do |n|
+		options[:rotations] = n.abs % 4
+	end
 	opts.separator nil
 	
 	#	Random initial state length
 	opts.on('-N', '--initnum NUMBER', Integer, "Length of random initial state. Padded by '0' state cells") do |n|
-		options[:initialStateLength] = n if 0 <= n
+		options[:initialStateLength] = n.abs
 	end
 	opts.separator ' '*39 + "So, the screen width could be 180, but it will only generate"
 	opts.separator ' '*39 + "an initial state of:"
@@ -560,7 +571,7 @@ end
 	cells.setState(i, stateString[i].to_i )
 end
 
-outputLines = []
+outputLinesByCell = []
 
 # Times by ten to incorporate the :outputLoopForever option,
 #   but still not let it actually loop forever...
@@ -569,7 +580,7 @@ outputLines = []
 	
 	# Output only after starting line.
 	if i >= options[:outputLineBegin]
-		outputLines.push cells.display()
+		outputLinesByCell.push cells.display().split('')
 	end
 	cells.computeNext
 	
@@ -579,6 +590,19 @@ outputLines = []
 	else
 		break if i > options[:outputLineCount]
 	end
+end
+
+################################################################################
+
+# Rotate if necessary.
+options[:rotations].times do |i|
+	outputLinesByCell = outputLinesByCell.rotate_right
+end
+
+# Join back up to a string array for output.
+outputLines = []
+outputLinesByCell.each do |line|
+	outputLines << line.join('')
 end
 
 ################################################################################
@@ -638,8 +662,6 @@ __END__
 ToDo:
 
 -i should be by state, not symbol.
-
-Rotate by right angles (transpose)
 
 Options -T and -m/-M do the same thing...
 
