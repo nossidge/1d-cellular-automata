@@ -190,9 +190,10 @@ options[:stateCentred] = false
 options[:stateRandomMirrored] = false
 
 options[:stateCount] = 2
+STATE_SYMBOLS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 options[:stateSymbols] = ' o0Oo0Oo0O'
 options[:stateSymbols] = ' o()[]{}<>\/'
-options[:stateSymbols] = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+options[:stateSymbols] = STATE_SYMBOLS
 options[:stateRandomProb] = nil
 
 options[:wrap] = false
@@ -478,6 +479,9 @@ rescue OptionParser::ParseError => e
 end
 
 ################################################################################
+
+# Make sure the symbols used don't mess up the image gen.
+options[:stateSymbols] = STATE_SYMBOLS if options[:image]
 
 # Default probablility is even for all states.
 if options[:stateRandom] and not options[:stateRandomProb]

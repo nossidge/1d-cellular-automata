@@ -103,9 +103,9 @@ $ automata.rb -x37 -y7 -u146 -c -s' o' -tv
            o o o o o o o o
 ```
 
-Instead of using a single _one_ cell as the initial state, we can specify whatever state we want, by using the `-i` option. The `-c` option works here as well, so we can use it to write `'o     o'` to the centre of the initial state:
+Instead of using a single _one_ cell as the initial state, we can specify whatever state we want, by using the `-i` option. The `-c` option works here as well, so we can use it to write `'1000001'` to the centre of the initial state:
 ```
-$ automata.rb -x37 -y7 -u146 -c -s' o' -i'o     o'
+$ automata.rb -x37 -y7 -u146 -c -s' o' -i'1000001'
                o     o
               o o   o o
              o   o o   o
@@ -157,7 +157,7 @@ o o o oo o           o  o     o o o
 
 I'm going to use the initial state of that last example to show the `-w` option. This wraps the screen, so that the far-left cell will take into account the value of the far-right cell and vice versa.
 ```
-$ automata.rb -x37 -y7 -u146 -c -s' o' -r -i'o oooooooooo ooooo oooooooo ooooooooo' -w
+$ automata.rb -x37 -y7 -u146 -c -s' o' -r -i'1 1111111111 11111 11111111 111111111' -w
 o oooooooooo ooooo oooooooo ooooooooo
    oooooooo   ooo   oooooo   oooooooo
 o o oooooo o o o o o oooo o o oooooo
