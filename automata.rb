@@ -7,6 +7,7 @@
 ################################################################################
 
 require 'optparse'
+require 'json'
 
 ################################################################################
 
@@ -94,12 +95,13 @@ class Cells
 		@rule
 	end
 	
-	# This stuff is just for Binary rules, currently.
+	# Read in nice regular rules from the file rules.json
+	# Examples, for Binary rules:
 	# http://plato.stanford.edu/entries/cellular-automata/supplement.html
 	def coolRule
-		if @stateCount == 2
-			coolRules = [30,50,54,60,62,90,94,102,110,126,150,158,182,188,190,220,222]
-	#		coolRules = [77,123,107,197,167,149,169,45,69]
+		rulesJSON = JSON.parse( open('rules.json').read )
+		coolRules = rulesJSON[ @stateCount.to_s ]
+		if coolRules
 			@rule = coolRules.sample
 			@ruleBin = @rule.to_s(@stateCount,state_table_count)
 		else
@@ -628,7 +630,7 @@ end
 if options[:image]
 	require_relative './num_to_pic.rb'
 	pic = PicFromNumbers.new(finalOutputArray)
-	pic.imageFile = options[:imageFile] if options[:imageFile]
+	pic.imageFile = options[:imageFile] || "pic_#{cells.rule.to_s}.png"
 	pic.set_colour(options[:colourR],options[:colourG],options[:colourB])
 	pic.generate_image
 else
@@ -636,7 +638,7 @@ else
 end
 
 # ToDo: Remove debug stuff!
-File.open('~rules.txt', 'a+') do |f|
+File.open('~rules_used.txt', 'a+') do |f|
 	f.puts cells.rule.to_s
 end
 
@@ -648,9 +650,5 @@ ToDo:
 
 -d default options.
 Probably should read them in from a file.
-
--U cool rules.
-Probably should read these in from a file also.
-Also, think of a better name than 'cool rules'.
 
 OOP - Make this an includable class as well as console runnable.
