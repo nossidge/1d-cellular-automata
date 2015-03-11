@@ -28,21 +28,6 @@ class Bignum
   end
 end
 
-# Convert to state string, e.g. ' o o oo' to '0101011'
-def to_state_string(stateValue,stateSymbols)
-	stateString = stateValue
-	(0...stateSymbols.length).each do |i|
-		stateString = stateString.gsub(stateSymbols[i],i.to_s)
-	end
-	
-	# If there's some dodgy characters in there, then convert to 0 state.
-	allowedChars = (0...stateSymbols.length).to_a.join
-	stateString.split('').each do |c|
-		stateString.sub!(c,'0') if not allowedChars.include?(c)
-	end
-	stateString
-end
-
 # Rotate a 2d array by 90 degrees.
 class Array
   def rotate_right
@@ -515,7 +500,7 @@ if options[:stateValue] or not options[:stateRandom]
 	
 	# Value of the initial state.
 	if options[:stateValue]
-		stateString = to_state_string(options[:stateValue],options[:stateSymbols])
+		stateString = options[:stateValue]
 		
 	else
 		# Draw a single cell of state 1.
@@ -660,10 +645,6 @@ end
 __END__
 
 ToDo:
-
--i should be by state, not symbol.
-
-Options -T and -m/-M do the same thing...
 
 -d default options.
 Probably should read them in from a file.
