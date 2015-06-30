@@ -38,6 +38,9 @@ end
 
 ################################################################################
 
+# This is just the cells in a SINGLE dimension, i.e. for one line.
+# It does not store the history of previous cell states.
+# You need to call #computeNext then #display() to return each state.
 class Cells
 	CHARS = ('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
 	         'abcdefghijklmnopqrstuvwxyz').split('')
@@ -237,7 +240,7 @@ defaultNamesToOutput = [
 def applyDefaultSettings(options,defaultName)
 
 	# MOUNTAIN
-	# automata.rb -Rwvf -r168
+	# automata.rb -wvf -r -u168
 	if defaultName == 'mountain' or defaultName == 'mountains'
 		options[:ruleNumber] = 168
 		options[:stateRandom]  = true
@@ -247,8 +250,8 @@ def applyDefaultSettings(options,defaultName)
 	end
 
 	# HANOI
-	# automata.rb -Rwv -r132 -l22
-	# automata.rb -Rwv -r164 -l32
+	# automata.rb -wv -r -u132 -y22
+	# automata.rb -wv -r -u164 -y32
 	if defaultName =~ /hanoi/
 		options[:stateRandom]  = true
 		options[:wrap] = true
@@ -263,7 +266,7 @@ def applyDefaultSettings(options,defaultName)
 	end
 
 	# TRIANGLE BUBBLES
-	# automata.rb -Rwv -r18 -L2
+	# automata.rb -wv -r -u18 -Y2
 	if defaultName == 'bubble' or defaultName == 'bubbles'
 		options[:ruleNumber] = 18
 		options[:outputLineBegin] = 2
@@ -273,8 +276,8 @@ def applyDefaultSettings(options,defaultName)
 	end
 
 	# EMBOSSED TRIANGLES
-	# automata.rb -Rwv -r57
-	# automata.rb -SRCvw -r99
+	# automata.rb -wv -r -u57
+	# automata.rb -Scvw -r -u99
 	if defaultName == 'emboss' or defaultName == 'embossed'
 		options[:ruleNumber] = [57,99].sample
 		options[:stateRandom]  = true
@@ -283,9 +286,9 @@ def applyDefaultSettings(options,defaultName)
 	end
 	
 	# GIZA
-	# automata.rb -Rvf -r160
-	# automata.rb -RwvfC -r160 -n100 -N90
-	# automata.rb -d giza -r164
+	# automata.rb -vf -r -u160
+	# automata.rb -wvfc -r -u160 -x100 -N90
+	# automata.rb -d giza -u164
 	if defaultName =~ /giza/
 		options[:ruleNumber] = 160
 		options[:stateRandom]  = true
@@ -311,14 +314,18 @@ def applyDefaultSettings(options,defaultName)
 		options[:stateRandomProb] = [2,1]
 	end
 	
-	# Curtains?
-	# automata.rb -SRCcvw -p'00000000000000000001' -r94
+	# Curtain? Banner?
+	# automata.rb -ScUvw -r14,1 -u94 -s' #'
 	
 end
 
 ################################################################################
 
-# This hash will hold all of the command-line options.
+# Some of these options are set in the form "options[:foo] = !options[:foo]"
+# The option list applies each specified option at the point in the option
+# list where it occurs. This means that a subsequent option can override or
+# alter previous ones. This is most relevant when using the -d option.
+
 optparse = OptionParser.new do |opts|
   
   # Set a banner, displayed at the top of the help screen.
@@ -376,8 +383,8 @@ optparse = OptionParser.new do |opts|
 
 	# Randomised initial state. Optional probability weight array.
 	opts.on('-r', '--random [1,2,0]', Array, 'Randomise the initial state') do |list|
-		options[:stateRandom] = !options[:stateRandom]
-		if options[:stateRandom] and list
+		if list
+			options[:stateRandom] = true
 			options[:stateRandomProb] = []
 
 			# Error if an argument is not an integer.
@@ -388,15 +395,18 @@ optparse = OptionParser.new do |opts|
 					raise OptionParser::ParseError
 				end
 			end
+			
+		else
+			options[:stateRandom] = !options[:stateRandom]
 		end
 	end
 	opts.separator ' '*39 + "Argument is probability of random state values:"
-	opts.separator ' '*39 + "  -p1,1   = even chance between two states (default)"
-	opts.separator ' '*39 + "  -p1,3   = 1/4 '0' state, 3/4 '1' state"
-	opts.separator ' '*39 + "  -p1,3,2 = 1/6 '0' state, 3/6 '1' state, 2/6 '2' state"
+	opts.separator ' '*39 + "  -r1,1   = even chance between two states (default)"
+	opts.separator ' '*39 + "  -r1,3   = 1/4 '0' state, 3/4 '1' state"
+	opts.separator ' '*39 + "  -r1,3,2 = 1/6 '0' state, 3/6 '1' state, 2/6 '2' state"
 	opts.separator nil
 	
-#	Symmetry stuff.
+	#	Symmetry stuff.
 	opts.on('-S', '--symmetry', 'Random initial states are symetrical') do |b|
 		options[:stateRandomMirrored] = !options[:stateRandomMirrored]
 	end
@@ -534,11 +544,11 @@ else
 		# If the length is odd.
 		isOdd = loops % 2 == 0 ? false : true
 		loops = loops / 2
-		stateString = statePosibilites.sample if isOdd
+		stateString = statePosibilites.sample.to_s if isOdd
 
 		# Start from the middle of the string, and work our way to the edge.
 		(0...loops).each do |i|
-			randChar = statePosibilites.sample
+			randChar = statePosibilites.sample.to_s
 			stateString = randChar + stateString + randChar
 		end
 		
@@ -656,3 +666,5 @@ ToDo:
 Probably should read them in from a file.
 
 OOP - Make this an includable class as well as console runnable.
+
+Testing
