@@ -94,6 +94,13 @@ class PicFromNumbers
 				colourR = (multiplier * @colourR).to_i
 				colourG = (multiplier * @colourG).to_i
 				colourB = (multiplier * @colourB).to_i
+				
+				# Handle inversion of colous if necessary.
+				if @colourInvert
+					colourR = 255 - colourR
+					colourG = 255 - colourG
+					colourB = 255 - colourB
+				end
 				colour = ChunkyPNG::Color.rgba(colourR, colourG, colourB, 255)
 				
 				# Draw each square.
