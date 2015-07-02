@@ -50,15 +50,18 @@ class Cells
 	# I haven't experimented with values other than 3 yet.
 	Neighbours = 3
 	
+	# The number of cells.
+	attr_reader :cell_count
+	
 	# Are we comparing far-left cells with far-right cells?
 	attr_accessor :wrap
 
 	# The rule of the automaton in base 10.
-	attr_accessor :rule
+	attr_reader :rule
 
 	# The rule of the automaton in whatever base that @state_count is set to.
 	# This isn't necessarily binary, but it's only a var name...
-	attr_accessor :rule_bin
+	attr_reader :rule_bin
 	
 	# This will be set to true if the calculated next state is the same as
 	#   the current state.
@@ -74,16 +77,21 @@ class Cells
     @cell_count = cell_count.to_i
 		@state_symbols = state_symbols
 		@cell_array = Array.new(@cell_count){ |i| 0 }
-		@rule = (rule==nil) ? rand_rule : rule
-		@rule_bin = @rule.to_s(@state_count,state_table_count)
+		self.rule = (rule==nil) ? rand_rule : rule
 		@duplicate_state = false
 		@wrap = true
   end
 	
+	# When setting a rule, also calculate the binary string representation.
+	def rule=(int)
+		@rule = int
+		@rule_bin = @rule.to_s(@state_count,self.state_table_count)
+	end
+	
 	# This is the table to use as the key for a Rule. It will vary by state count.
 	# http://mathworld.wolfram.com/images/eps-gif/ElementaryCA30Rules_750.gif
 	def state_table
-		(state_table_count-1).downto(0).map do |i|
+		(self.state_table_count-1).downto(0).map do |i|
 			i.to_s(@state_count,Neighbours)
 		end
 	end
@@ -95,7 +103,7 @@ class Cells
 	def rand_rule
 		all_possible_rule_count = @state_count ** (@state_count ** Neighbours)
 		@rule = rand(all_possible_rule_count)
-		@rule_bin = @rule.to_s(@state_count,state_table_count)
+		@rule_bin = @rule.to_s(@state_count,self.state_table_count)
 		@rule
 	end
 	
@@ -107,7 +115,7 @@ class Cells
 		cool_rules = rules_JSON[ @state_count.to_s ]
 		if cool_rules
 			@rule = cool_rules.sample
-			@rule_bin = @rule.to_s(@state_count,state_table_count)
+			@rule_bin = @rule.to_s(@state_count,self.state_table_count)
 		else
 			rand_rule
 		end
@@ -147,9 +155,9 @@ class Cells
 			state_neighbours = "#{state_left}#{state_this}#{state_right}"
 			
 			# Loop backwards.
-			(state_table_count-1).downto(0).each do |n|
+			(self.state_table_count-1).downto(0).each do |n|
 				state = n.to_s(@state_count,Neighbours)
-				val = @rule_bin[state_table_count-1-n]
+				val = @rule_bin[self.state_table_count-1-n]
 				if state == state_neighbours
 					cell_array_next_state[i] = val.to_i
 				end
