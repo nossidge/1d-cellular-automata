@@ -102,8 +102,7 @@ class Cells
 	# This should work for all state counts.
 	def rand_rule
 		all_possible_rule_count = @state_count ** (@state_count ** Neighbours)
-		@rule = rand(all_possible_rule_count)
-		@rule_bin = @rule.to_s(@state_count,self.state_table_count)
+		self.rule = rand(all_possible_rule_count)
 		@rule
 	end
 	
@@ -114,8 +113,7 @@ class Cells
 		rules_JSON = JSON.parse( open('rules.json').read )
 		cool_rules = rules_JSON[ @state_count.to_s ]
 		if cool_rules
-			@rule = cool_rules.sample
-			@rule_bin = @rule.to_s(@state_count,self.state_table_count)
+			self.rule = cool_rules.sample
 		else
 			rand_rule
 		end
