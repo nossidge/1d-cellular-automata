@@ -17,6 +17,26 @@ end
 
 ################################################################################
 
+# Basically just an array. Designed to keep iterating forward through
+#   the array, looping back to the start when we reach the end.
+class LoopedArray
+	def initialize(input_array)
+		@array = input_array
+		@index = -1
+	end
+	def next
+		@index += 1
+		@index = 0 if @index >= @array.length
+		@array[@index]
+	end
+	def to_s
+		@index = 0 if @index == -1
+		@array[@index].to_s
+	end
+end
+
+################################################################################
+
 class PicFromNumbers
 	CHARS = ('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
 	         'abcdefghijklmnopqrstuvwxyz').split('')
@@ -50,10 +70,13 @@ class PicFromNumbers
 		set_dimensions()
 	end
 	
+	# This uses the LoopedArray class to cycle through colours.
+	# So convert to array if not already.
+	# Also, mod by 256 so we are sure the number is in colour range.
 	def set_colour(r,g,b)
-		@colourR = r % 256
-		@colourG = g % 256
-		@colourB = b % 256
+		@colourR = LoopedArray.new [*r].map {|i| i % 256}
+		@colourG = LoopedArray.new [*g].map {|i| i % 256}
+		@colourB = LoopedArray.new [*b].map {|i| i % 256}
 	end
 	
 	def set_dimensions()
@@ -86,14 +109,22 @@ class PicFromNumbers
 		# Loop along the string array and write each char as a square.
 		iLine = 0
 		@inputTextArray.each do |line|
+
+			# Get the colour for the line.
+			line_colour_r = @colourR.next
+			line_colour_g = @colourG.next
+			line_colour_b = @colourB.next
+
+			# Loop through each character, and alter the base line colour according
+			#   to the value of the cell.
 			iChar = 0
 			line.split('').each do |char|
 				
-				# Colours.
+				# The colour multiplier of the cell.
 				multiplier = CHARS.index(char).to_f / @highestNum
-				colourR = (multiplier * @colourR).to_i
-				colourG = (multiplier * @colourG).to_i
-				colourB = (multiplier * @colourB).to_i
+				colourR = (multiplier * line_colour_r).to_i
+				colourG = (multiplier * line_colour_g).to_i
+				colourB = (multiplier * line_colour_b).to_i
 				
 				# Handle inversion of colours if necessary.
 				if @colourInvert
