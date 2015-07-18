@@ -95,7 +95,7 @@ class PicFromNumbers
 				colourG = (multiplier * @colourG).to_i
 				colourB = (multiplier * @colourB).to_i
 				
-				# Handle inversion of colous if necessary.
+				# Handle inversion of colours if necessary.
 				if @colourInvert
 					colourR = 255 - colourR
 					colourG = 255 - colourG

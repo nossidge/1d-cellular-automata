@@ -8,15 +8,16 @@
 
 require 'optparse'
 require 'json'
-require './cells.rb'
+
+require_relative 'cells.rb'
 
 ################################################################################
 
 # Rotate a 2d array by 90 degrees.
 class Array
-  def rotate_right
-    transpose.map &:reverse
-  end
+	def rotate_right
+		transpose.map &:reverse
+	end
 end
 
 ################################################################################
@@ -184,11 +185,11 @@ end
 # alter previous ones. This is most relevant when using the -d option.
 
 optparse = OptionParser.new do |opts|
-  
-  # Set a banner, displayed at the top of the help screen.
+
+	# Set a banner, displayed at the top of the help screen.
 	opts.banner  = "\n  One-dimensional cellular automaton."
 	opts.banner += "\n  http://mathworld.wolfram.com/ElementaryCellularAutomaton.html"
-  opts.banner += "\n\n  Usage:  ~nossidge/Code/automata.rb [- options]"
+	opts.banner += "\n\n  Usage:  ~nossidge/Code/automata.rb [- options]"
 	opts.separator nil
 
 	# Really important stuff.
@@ -332,10 +333,10 @@ optparse = OptionParser.new do |opts|
 	opts.separator nil
 	
 	# Help stuff.
-  opts.on_tail('-h', '--help', 'Display this help screen' ) do
-    puts opts, nil
-    exit 0
-  end
+	opts.on_tail('-h', '--help', 'Display this help screen' ) do
+		puts opts, nil
+		exit 0
+	end
 end
 
 begin

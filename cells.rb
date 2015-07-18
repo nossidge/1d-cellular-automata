@@ -18,7 +18,7 @@ class Fixnum
 	define_method(:to_s) do |base=0,char_len=0|
 		old_method = (base==0) ? old_to_s.bind(self).() : old_to_s.bind(self).(base)
 		('0'*char_len + old_method )[-char_len..-1]
-  end
+	end
 end
 # Also Bignum? ToDo: Figure out how to do this properly...
 class Bignum
@@ -26,7 +26,7 @@ class Bignum
 	define_method(:to_s) do |base=0,char_len=0|
 		old_method = (base==0) ? old_to_s.bind(self).() : old_to_s.bind(self).(base)
 		('0'*char_len + old_method )[-char_len..-1]
-  end
+	end
 end
 
 ################################################################################
@@ -65,15 +65,15 @@ class Cells
 	# @state_symbols is an array of strings (usually single characters), to
 	#   display the state.
 
-  def initialize(state_count=2, cell_count=11, state_symbols=CHARS, rule=nil)
-    @state_count = state_count
-    @cell_count = cell_count.to_i
+	def initialize(state_count=2, cell_count=11, state_symbols=CHARS, rule=nil)
+		@state_count = state_count
+		@cell_count = cell_count.to_i
 		@state_symbols = state_symbols.split('')
 		@cell_array = Array.new(@cell_count){ |i| 0 }
 		self.rule = (rule==nil) ? rand_rule : rule
 		@duplicate_state = false
 		@wrap = true
-  end
+	end
 	
 	# When setting a rule, also calculate the binary string representation.
 	def rule=(int)
@@ -180,12 +180,12 @@ class Cells
 	end
 	
 	# Output the current generation.
-  def to_a
+	def to_a
 		@cell_array.map{|i| @state_symbols[i.to_i]}
-  end
-  def to_s
+	end
+	def to_s
 		to_a.join
-  end
+	end
 end
 
 ################################################################################
