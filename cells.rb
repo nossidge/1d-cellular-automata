@@ -111,9 +111,11 @@ class Cells
 	end
 	
 	# This should work for all state counts.
-	def rand_rule
-		self.rule = rand(count_rule_possibilities)
-		@rule
+	# rule_count is the number of random rules to generate.
+	def rand_rule(rule_count=1)
+		self.rule = rule_count.times.map do
+			rand(count_rule_possibilities)
+		end
 	end
 	
 	# Read in nice regular rules from the file rules.json
