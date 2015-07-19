@@ -11,6 +11,10 @@
 # http://mathworld.wolfram.com/ElementaryCellularAutomaton.html
 ################################################################################
 
+require_relative 'looped_array.rb'
+
+################################################################################
+
 # Add string length to Fixnum.to_s method.
 # This will pad with zeroes to get the correct length (if specified).
 class Fixnum
@@ -76,9 +80,14 @@ class Cells
 	end
 	
 	# When setting a rule, also calculate the binary string representation.
-	def rule=(int)
-		@rule = int
-		@rule_bin = @rule.to_s(@state_count,self.state_table_count)
+	# Also mod by 256, or whatever is the max rule count for the dimension.
+	def rule=(input_rule)
+		array_rule     = [*input_rule].map {|i| i % count_rule_possibilities}
+		array_rule_bin = array_rule.map do |r|
+			r.to_s(@state_count,self.state_table_count)
+		end
+		@rule     = LoopedArray.new(array_rule)
+		@rule_bin = LoopedArray.new(array_rule_bin)
 	end
 	
 	# This is the table to use as the key for a Rule. It will vary by state count.
@@ -92,10 +101,14 @@ class Cells
 		@state_count ** Neighbours
 	end
 	
+	# All possible rules for the cell state and lookup cell neighbour counts.
+	def count_rule_possibilities
+		@state_count ** (@state_count ** Neighbours)
+	end
+	
 	# This should work for all state counts.
 	def rand_rule
-		all_possible_rule_count = @state_count ** (@state_count ** Neighbours)
-		self.rule = rand(all_possible_rule_count)
+		self.rule = rand(count_rule_possibilities)
 		@rule
 	end
 	
@@ -143,6 +156,10 @@ class Cells
 		state_neighbours = '000'
 		cell_array_next_state = Array.new(@cell_count){ |i| 0 }
 		
+		# Get the rule string for this generation.
+		rule_bin_current = @rule_bin.next
+		
+		# Calculate the next state for each cell.
 		(0...@cell_count).each do |i|
 			state_left  = 0
 			state_this  = @cell_array[i]
@@ -163,7 +180,7 @@ class Cells
 			# Loop backwards.
 			(self.state_table_count-1).downto(0).each do |n|
 				state = n.to_s(@state_count,Neighbours)
-				val = @rule_bin[self.state_table_count-1-n]
+				val = rule_bin_current[self.state_table_count-1-n]
 				if state == state_neighbours
 					cell_array_next_state[i] = val.to_i
 				end
