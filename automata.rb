@@ -523,6 +523,4 @@ ToDo:
 -d default options.
 Probably should read them in from a file.
 
-OOP - Make this an includable class as well as console runnable.
-
 Testing
