@@ -425,10 +425,8 @@ if options[:state_centred]
 	state_string = state_string.center(options[:cell_count],'0')
 end
 
-# Traverse state_string and assign to each cell.
-(0...state_string.length).each do |i|
-	cells.set_state(i, state_string[i].to_i )
-end
+# Set the cells to the value of state_string.
+cells.set_all_cells(state_string)
 
 output_lines_by_cell = []
 

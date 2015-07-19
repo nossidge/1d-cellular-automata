@@ -74,9 +74,13 @@ class Cells
 		@cell_count = cell_count.to_i
 		@state_symbols = state_symbols.split('')
 		@cell_array = Array.new(@cell_count){ |i| 0 }
-		self.rule = (rule==nil) ? rand_rule : rule
 		@duplicate_state = false
 		@wrap = true
+		if rule == nil
+			rand_rule
+		else
+			self.rule = rule
+		end
 	end
 	
 	# When setting a rule, also calculate the binary string representation.
@@ -147,6 +151,11 @@ class Cells
 		end
 		
 		self.to_s
+	end
+	
+	# Set a single centred '1' cell between '0' cells.
+	def set_single_cell_centred
+		set_all_cells('1'.center(@cell_count,'0'))
 	end
 	
 	# Calculate the cells of the next generation.
