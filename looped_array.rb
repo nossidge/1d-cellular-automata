@@ -18,6 +18,9 @@ class LoopedArray
 		@index = 0 if @index == -1
 		@array[@index].to_s
 	end
+	def to_a
+		@array
+	end
 end
 
 ################################################################################
