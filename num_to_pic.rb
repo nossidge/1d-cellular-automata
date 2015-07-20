@@ -23,32 +23,32 @@ class PicFromNumbers
 	CHARS = ('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
 	         'abcdefghijklmnopqrstuvwxyz').split('')
 	
-	attr_accessor :baseNum
-	attr_accessor :colourInvert
-	attr_accessor :imageFile
-	attr_accessor :colourR
-	attr_accessor :colourG
-	attr_accessor :colourB
+	attr_accessor :base_num
+	attr_accessor :colour_invert
+	attr_accessor :image_file
+	attr_accessor :colour_r
+	attr_accessor :colour_g
+	attr_accessor :colour_b
 	
-	attr_reader :inputTextArray
-	attr_reader :pixelSize
+	attr_reader :input_text_array
+	attr_reader :pixel_size
 	
-  def initialize(inputTextArray)
-		@colourInvert = false
-		@imageFile = "pic_#{Time.now.to_i.to_s}.png"
+  def initialize(input_text_array)
+		@colour_invert = false
+		@image_file = "pic_#{Time.now.to_i.to_s}.png"
 		set_colour(255,255,255)
 		
-		@pixelSize = 1
-		change_text(inputTextArray)
+		@pixel_size = 1
+		change_text(input_text_array)
   end
 	
-	def change_text(inputTextArray)
-		@inputTextArray = inputTextArray
+	def change_text(input_text_array)
+		@input_text_array = input_text_array
 		set_dimensions()
 	end
 	
-	def change_pixel_size(pixelSize)
-		@pixelSize = pixelSize
+	def change_pixel_size(pixel_size)
+		@pixel_size = pixel_size
 		set_dimensions()
 	end
 	
@@ -56,79 +56,79 @@ class PicFromNumbers
 	# So convert to array if not already.
 	# Also, mod by 256 so we are sure the number is in colour range.
 	def set_colour(r,g,b)
-		@colourR = LoopedArray.new [*r].map {|i| i % 256}
-		@colourG = LoopedArray.new [*g].map {|i| i % 256}
-		@colourB = LoopedArray.new [*b].map {|i| i % 256}
+		@colour_r = LoopedArray.new [*r].map {|i| i % 256}
+		@colour_g = LoopedArray.new [*g].map {|i| i % 256}
+		@colour_b = LoopedArray.new [*b].map {|i| i % 256}
 	end
 	
-	def set_dimensions()
+	def set_dimensions
 		# Find the highest number in the lines and the longest len.
-		@highestNum = 0
-		highestLen = 0
-		@inputTextArray.each do |i|
-			iSplit = i.split('')
-			num = iSplit.sort.uniq.map{ |j| CHARS.index(j) }.sort[-1]
-			len = iSplit.length
+		@highest_num = 0
+		highest_len = 0
+		@input_text_array.each do |i|
+			i_split = i.split('')
+			num = i_split.sort.uniq.map{ |j| CHARS.index(j) }.sort[-1]
+			len = i_split.length
 			
-			@highestNum = num if num > @highestNum
-			highestLen = len if len > highestLen
+			@highest_num = num if num > @highest_num
+			highest_len = len if len > highest_len
 		end
 		
 		# The highest number character in the array.
-		@highestNum = @baseNum if @baseNum
+		@highest_num = @base_num if @base_num
 
 		# Get the dimensions of the image.
-		@xLength = @pixelSize * highestLen
-		@yLength = @pixelSize * @inputTextArray.length
+		@x_length = @pixel_size * highest_len
+		@y_length = @pixel_size * @input_text_array.length
 	end
 	
-	def generate_image()
+	def generate_image
 		set_dimensions()
 		
 		# Create an image from scratch, save as an interlaced PNG.
-		png = ChunkyPNG::Image.new(@xLength, @yLength, ChunkyPNG::Color::TRANSPARENT)
+		png = ChunkyPNG::Image.new(@x_length, @y_length, ChunkyPNG::Color::TRANSPARENT)
 
 		# Loop along the string array and write each char as a square.
-		iLine = 0
-		@inputTextArray.each do |line|
+		i_line = 0
+		@input_text_array.each do |line|
 
 			# Get the colour for the line.
-			line_colour_r = @colourR.next
-			line_colour_g = @colourG.next
-			line_colour_b = @colourB.next
+			line_colour_r = @colour_r.next
+			line_colour_g = @colour_g.next
+			line_colour_b = @colour_b.next
 
 			# Loop through each character, and alter the base line colour according
 			#   to the value of the cell.
-			iChar = 0
+			i_char = 0
 			line.split('').each do |char|
 				
 				# The colour multiplier of the cell.
-				multiplier = CHARS.index(char).to_f / @highestNum
-				colourR = (multiplier * line_colour_r).to_i
-				colourG = (multiplier * line_colour_g).to_i
-				colourB = (multiplier * line_colour_b).to_i
+				multiplier = CHARS.index(char).to_f / @highest_num
+				colour_r = (multiplier * line_colour_r).to_i
+				colour_g = (multiplier * line_colour_g).to_i
+				colour_b = (multiplier * line_colour_b).to_i
 				
 				# Handle inversion of colours if necessary.
-				if @colourInvert
-					colourR = 255 - colourR
-					colourG = 255 - colourG
-					colourB = 255 - colourB
+				if @colour_invert
+					colour_r = 255 - colour_r
+					colour_g = 255 - colour_g
+					colour_b = 255 - colour_b
 				end
-				colour = ChunkyPNG::Color.rgba(colourR, colourG, colourB, 255)
+				colour = ChunkyPNG::Color.rgba(colour_r, colour_g, colour_b, 255)
 				
 				# Draw each square.
-				png.rect(iChar, iLine, 
-					iChar+@pixelSize-1, iLine+@pixelSize-1, 
+				png.rect(i_char, i_line,
+					i_char+@pixel_size-1, i_line+@pixel_size-1,
 					colour, colour
 				)
 
-				iChar += @pixelSize
+				i_char += @pixel_size
 			end
-			iLine += @pixelSize
+			i_line += @pixel_size
 		end
 
 		# Save to disk.
-		png.save(@imageFile, :interlace => true)
+		png.save(@image_file, :interlace => true)
 	end
 end
 
@@ -142,14 +142,14 @@ if __FILE__ == $0
 	require 'optparse'
 
 	options = {}
-	options[:pixelSize] = 1
-	options[:baseNum] = nil
-	options[:colourInvert] = false
-	options[:imageFile] = "pic_#{Time.now.to_i.to_s}.png"
+	options[:pixel_size]    = 1
+	options[:base_num]      = nil
+	options[:colour_invert] = false
+	options[:image_file]    = "pic_#{Time.now.to_i.to_s}.png"
 
-	options[:colourR] = 255
-	options[:colourG] = 255
-	options[:colourB] = 255
+	options[:colour_r] = 255
+	options[:colour_g] = 255
+	options[:colour_b] = 255
 
 	# Get all of the command-line options.
 	optparse = OptionParser.new do |opts|
@@ -158,27 +158,27 @@ if __FILE__ == $0
 		opts.banner = "Usage:  automata.rb -s'0123456789' | num_to_pic.rb [options]"
 
 		opts.on('-p', '--pixel NUMBER', Integer, 'Size of pixels (zoom)') do |n|
-			options[:pixelSize] = n if 0 < n
+			options[:pixel_size] = n if 0 < n
 		end
 		opts.on('-b', '--base NUMBER', Integer, 'Base number') do |n|
-			options[:baseNum] = n if 0 < n
+			options[:base_num] = n if 0 < n
 		end
 		opts.on('-i', '--invert', 'Invert the image colours') do |b|
-			options[:colourInvert] = b
+			options[:colour_invert] = b
 		end
-		opts.on('-f', '--file STRING', 'imageFile') do |s|
-			options[:imageFile] = s
+		opts.on('-f', '--file STRING', 'File name for the resulting .png') do |s|
+			options[:image_file] = s
 		end
 		
 		# Colours
 		opts.on('-R', '--red NUMBER', Integer, 'Red component') do |n|
-			options[:colourR] = n if 0 <= n and n <= 255
+			options[:colour_r] = n if 0 <= n and n <= 255
 		end
 		opts.on('-G', '--green NUMBER', Integer, 'Green component') do |n|
-			options[:colourG] = n if 0 <= n and n <= 255
+			options[:colour_g] = n if 0 <= n and n <= 255
 		end
 		opts.on('-B', '--blue NUMBER', Integer, 'Blue component') do |n|
-			options[:colourB] = n if 0 <= n and n <= 255
+			options[:colour_b] = n if 0 <= n and n <= 255
 		end
 		
 		opts.on('-h', '--help', 'Display this help screen' ) do
@@ -204,11 +204,11 @@ if __FILE__ == $0
 
 	# Create pic from inputs.
 	pic = PicFromNumbers.new(lines)
-	pic.baseNum      = options[:baseNum]
-	pic.colourInvert = options[:colourInvert]
-	pic.imageFile    = 'pics/' + options[:imageFile]
-	pic.change_pixel_size(options[:pixelSize])
-	pic.set_colour(options[:colourR],options[:colourG],options[:colourB])
+	pic.base_num      = options[:base_num]
+	pic.colour_invert = options[:colour_invert]
+	pic.image_file    = 'pics/' + options[:image_file]
+	pic.change_pixel_size(options[:pixel_size])
+	pic.set_colour(options[:colour_r],options[:colour_g],options[:colour_b])
 	pic.generate_image
 
 ################################################################################

@@ -510,7 +510,7 @@ end
 if options[:image]
 	require_relative './num_to_pic.rb'
 	pic = PicFromNumbers.new(final_output_array)
-	pic.imageFile = options[:image_file] || "pic_#{cells.rule.to_s}.png"
+	pic.image_file = options[:image_file] || "pic_#{cells.rule.to_a.join('_')}.png"
 	pic.set_colour(options[:colour_r],options[:colour_g],options[:colour_b])
 	pic.generate_image
 else
