@@ -137,19 +137,34 @@ end
 # Don't need to do any console stuff if it's being included as a library.
 if __FILE__ == $0
 
-################################################################################
+  ##############################################################################
+	
+	# Convert an input array to Integer, and raise an error if not possible.
+	def each_to_int(input_array, error_to_raise = OptionParser::ParseError)
+		output_array = []
+		input_array.each do |elem|
+			begin
+				output_array << Integer(elem)
+			rescue ArgumentError => e
+				raise error_to_raise
+			end
+		end
+		output_array
+	end
+
+	##############################################################################
 
 	require 'optparse'
-
+	
 	options = {}
 	options[:pixel_size]    = 1
 	options[:base_num]      = nil
 	options[:colour_invert] = false
 	options[:image_file]    = "pic_#{Time.now.to_i.to_s}.png"
 
-	options[:colour_r] = 255
-	options[:colour_g] = 255
-	options[:colour_b] = 255
+	options[:colour_r] = [255]
+	options[:colour_g] = [255]
+	options[:colour_b] = [255]
 
 	# Get all of the command-line options.
 	optparse = OptionParser.new do |opts|
@@ -157,28 +172,28 @@ if __FILE__ == $0
 		# Set a banner, displayed at the top of the help screen.
 		opts.banner = "Usage:  automata.rb -s'0123456789' | num_to_pic.rb [options]"
 
-		opts.on('-p', '--pixel NUMBER', Integer, 'Size of pixels (zoom)') do |n|
+		opts.on('-p', '--pixel  NUMBER', Integer, 'Size of pixels (zoom)') do |n|
 			options[:pixel_size] = n if 0 < n
 		end
-		opts.on('-b', '--base NUMBER', Integer, 'Base number') do |n|
+		opts.on('-b', '--base   NUMBER', Integer, 'Base number') do |n|
 			options[:base_num] = n if 0 < n
 		end
 		opts.on('-i', '--invert', 'Invert the image colours') do |b|
 			options[:colour_invert] = b
 		end
-		opts.on('-f', '--file STRING', 'File name for the resulting .png') do |s|
+		opts.on('-f', '--file   STRING', 'File name for the resulting .png') do |s|
 			options[:image_file] = s
 		end
 		
-		# Colours
-		opts.on('-R', '--red NUMBER', Integer, 'Red component') do |n|
-			options[:colour_r] = n if 0 <= n and n <= 255
+		# Colours. Make sure the arguments are integers >= 0 and < 256.
+		opts.on('-R', '--red    NUM[,NUM]', Array, 'Red component') do |list|
+			options[:colour_r] = each_to_int(list).map { |i| i = i.abs % 256 }
 		end
-		opts.on('-G', '--green NUMBER', Integer, 'Green component') do |n|
-			options[:colour_g] = n if 0 <= n and n <= 255
+		opts.on('-G', '--green  NUM[,NUM]', Array, 'Green component') do |list|
+			options[:colour_g] = each_to_int(list).map { |i| i = i.abs % 256 }
 		end
-		opts.on('-B', '--blue NUMBER', Integer, 'Blue component') do |n|
-			options[:colour_b] = n if 0 <= n and n <= 255
+		opts.on('-B', '--blue   NUM[,NUM]', Array, 'Blue component') do |list|
+			options[:colour_b] = each_to_int(list).map { |i| i = i.abs % 256 }
 		end
 		
 		opts.on('-h', '--help', 'Display this help screen' ) do
@@ -186,9 +201,15 @@ if __FILE__ == $0
 			exit
 		end
 	end
-	optparse.parse!
+	
+	begin
+		optparse.parse!(ARGV)
+	rescue OptionParser::ParseError => e
+		puts e
+		exit 1
+	end
 
-################################################################################
+  ##############################################################################
 
 	# Get piped info.
 	lines = []
@@ -206,12 +227,12 @@ if __FILE__ == $0
 	pic = PicFromNumbers.new(lines)
 	pic.base_num      = options[:base_num]
 	pic.colour_invert = options[:colour_invert]
-	pic.image_file    = 'pics/' + options[:image_file]
+	pic.image_file    = options[:image_file]
 	pic.change_pixel_size(options[:pixel_size])
 	pic.set_colour(options[:colour_r],options[:colour_g],options[:colour_b])
 	pic.generate_image
 
-################################################################################
+  ##############################################################################
 	
 end
 
