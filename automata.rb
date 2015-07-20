@@ -222,10 +222,20 @@ optparse = OptionParser.new do |opts|
 	end
 	opts.separator nil
 	
-	# Rule stuff.
-	opts.on('-u', '--rule NUMBER', Integer, 'Elementary cellular automaton Rule number') do |n|
-		options[:rule_number] = n if 0 <= n
+	# Set specific rule(s).
+	opts.on('-u', '--rule 30,110', Array, 'Cellular automaton Rule number(s)') do |list|
+		options[:rule_number] = []
+		
+		# Error if an argument is not an integer.
+		list.each do |elem|
+			begin
+				options[:rule_number] << Integer(elem).abs
+			rescue ArgumentError => e
+				raise OptionParser::ParseError
+			end
+		end
 	end
+	
 	opts.on('-U', '--rulecool', "Use a random 'cool' Rule. These are uniform and pretty") do |b|
 		options[:rule_cool] = !options[:rule_cool]
 	end
@@ -356,7 +366,7 @@ if options[:state_random] and not options[:state_random_prob]
 	options[:state_random_prob] = Array.new(options[:state_count]){ |i| 1 }
 end
 
-# Use a specific rule, if one is specified.
+# Use a specific rule, if one (or more) is specified.
 if options[:rule_number] != nil
 	cells = Cells.new(options[:state_count],options[:cell_count],options[:state_symbols],options[:rule_number])
 
