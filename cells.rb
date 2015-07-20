@@ -140,9 +140,14 @@ class Cells
 	# Should do more validation of state symbols...
 	def set_all_cells(full_state)
 		
-		# Reject if it's the wrong length.
-		if full_state.length != @cell_count
-			raise 'Wrong length for cell array'
+		# Add trailing zero states if it's too short.
+		if full_state.length < @cell_count
+			set_all_cells( full_state.ljust(@cell_count,'0') )
+			
+		# Reject if it's too long.
+		elsif full_state.length > @cell_count
+			raise 'Wrong length for cell array. Initial state too long.'
+			
 		else
 			
 			# If it's a string, make it an array.
@@ -157,7 +162,7 @@ class Cells
 	
 	# Set a single centred '1' cell between '0' cells.
 	def set_single_cell_centred
-		set_all_cells('1'.center(@cell_count,'0'))
+		set_all_cells( '1'.center(@cell_count,'0') )
 	end
 	
 	# Calculate the cells of the next generation.
