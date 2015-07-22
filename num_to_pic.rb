@@ -137,24 +137,10 @@ end
 # Don't need to do any console stuff if it's being included as a library.
 if __FILE__ == $0
 
-  ##############################################################################
-	
-	# Convert an input array to Integer, and raise an error if not possible.
-	def each_to_int(input_array, error_to_raise = OptionParser::ParseError)
-		output_array = []
-		input_array.each do |elem|
-			begin
-				output_array << Integer(elem)
-			rescue ArgumentError => e
-				raise error_to_raise
-			end
-		end
-		output_array
-	end
-
 	##############################################################################
 
 	require 'optparse'
+	require_relative 'common.rb'
 	
 	options = {}
 	options[:pixel_size]    = 1
@@ -186,14 +172,17 @@ if __FILE__ == $0
 		end
 		
 		# Colours. Make sure the arguments are integers >= 0 and < 256.
-		opts.on('-R', '--red    NUM[,NUM]', Array, 'Red component') do |list|
-			options[:colour_r] = each_to_int(list).map { |i| i = i.abs % 256 }
+		opts.on('-R', '--red    NUM[,NUM]', Array, 'Red component of image') do |list|
+			options[:colour_r] =
+				each_to_int(list, OptionParser::ParseError).map { |i| i = i.abs % 256 }
 		end
-		opts.on('-G', '--green  NUM[,NUM]', Array, 'Green component') do |list|
-			options[:colour_g] = each_to_int(list).map { |i| i = i.abs % 256 }
+		opts.on('-G', '--green  NUM[,NUM]', Array, 'Green component of image') do |list|
+			options[:colour_g] =
+				each_to_int(list, OptionParser::ParseError).map { |i| i = i.abs % 256 }
 		end
-		opts.on('-B', '--blue   NUM[,NUM]', Array, 'Blue component') do |list|
-			options[:colour_b] = each_to_int(list).map { |i| i = i.abs % 256 }
+		opts.on('-B', '--blue   NUM[,NUM]', Array, 'Blue component of image') do |list|
+			options[:colour_b] =
+				each_to_int(list, OptionParser::ParseError).map { |i| i = i.abs % 256 }
 		end
 		
 		opts.on('-h', '--help', 'Display this help screen' ) do

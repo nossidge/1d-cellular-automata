@@ -9,6 +9,7 @@
 require 'optparse'
 require 'json'
 
+require_relative 'common.rb'
 require_relative 'cells.rb'
 
 ################################################################################
@@ -331,14 +332,18 @@ optparse = OptionParser.new do |opts|
 	opts.on('-F', '--imagefile FILENAME', 'Specify the name of the .png file') do |s|
 		options[:image_file] = s
 	end
-	opts.on('-R', '--red NUMBER', Integer, 'Red component of image') do |n|
-		options[:colour_r] = n if 0 <= n and n <= 255
+	# Colours. Make sure the arguments are integers >= 0 and < 256.
+	opts.on('-R', '--red    NUM[,NUM]', Array, 'Red component of image') do |list|
+		options[:colour_r] =
+			each_to_int(list, OptionParser::ParseError).map { |i| i = i.abs % 256 }
 	end
-	opts.on('-G', '--green NUMBER', Integer, 'Green component of image') do |n|
-		options[:colour_g] = n if 0 <= n and n <= 255
+	opts.on('-G', '--green  NUM[,NUM]', Array, 'Green component of image') do |list|
+		options[:colour_g] =
+			each_to_int(list, OptionParser::ParseError).map { |i| i = i.abs % 256 }
 	end
-	opts.on('-B', '--blue NUMBER', Integer, 'Blue component of image') do |n|
-		options[:colour_b] = n if 0 <= n and n <= 255
+	opts.on('-B', '--blue   NUM[,NUM]', Array, 'Blue component of image') do |list|
+		options[:colour_b] =
+			each_to_int(list, OptionParser::ParseError).map { |i| i = i.abs % 256 }
 	end
 	opts.separator nil
 	
