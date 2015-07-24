@@ -59,12 +59,7 @@ options[:state_symbols] = STATE_SYMBOLS
 options[:state_random_prob] = nil
 
 options[:wrap] = false
-options[:reverse] = false
-options[:vert_symmetry] = false
-options[:horiz_symmetry] = false
-
 options[:initial_state_length] = nil
-options[:rotations] = 0
 
 # This is for num_to_pic.rb
 options[:image] = false
@@ -72,6 +67,9 @@ options[:colour_r] = 255
 options[:colour_g] = 255
 options[:colour_b] = 255
 options[:image_file] = nil
+
+# List of transformations to apply to the automaton output.
+options[:transformation_queue] = []
 
 ################################################################################
 
@@ -104,7 +102,7 @@ def apply_default_settings(options,defaultName)
 		options[:rule_number] = 168
 		options[:state_random]  = true
 		options[:wrap] = true
-		options[:reverse] = true
+		options[:transformation_queue] << :reverse
 		options[:output_loop_forever] = true
 	end
 
@@ -114,7 +112,7 @@ def apply_default_settings(options,defaultName)
 	if defaultName =~ /hanoi/
 		options[:state_random]  = true
 		options[:wrap] = true
-		options[:reverse] = true
+		options[:transformation_queue] << :reverse
 		if defaultName == 'hanoi2'
 			options[:rule_number] = 164
 			options[:output_line_count] = 32
@@ -131,7 +129,7 @@ def apply_default_settings(options,defaultName)
 		options[:output_line_begin] = 2
 		options[:state_random]  = true
 		options[:wrap] = true
-		options[:reverse] = true
+		options[:transformation_queue] << :reverse
 	end
 
 	# EMBOSSED TRIANGLES
@@ -141,7 +139,7 @@ def apply_default_settings(options,defaultName)
 		options[:rule_number] = [57,99].sample
 		options[:state_random]  = true
 		options[:wrap] = true
-		options[:reverse] = true
+		options[:transformation_queue] << :reverse
 	end
 	
 	# GIZA
@@ -153,7 +151,7 @@ def apply_default_settings(options,defaultName)
 		options[:state_random]  = true
 		options[:state_centred] = true
 		options[:wrap] = true
-		options[:reverse] = true
+		options[:transformation_queue] << :reverse
 		options[:output_loop_forever] = true
 		options[:initial_state_length] = options[:cell_count] - 10
 		options[:state_random_prob] = [1,14]
@@ -168,7 +166,7 @@ def apply_default_settings(options,defaultName)
 		options[:state_random]  = true
 		options[:state_random_mirrored] = true
 		options[:wrap] = true
-		options[:reverse] = true
+		options[:transformation_queue] << :reverse
 		options[:output_loop_forever] = true
 		options[:state_random_prob] = [2,1]
 	end
@@ -280,13 +278,13 @@ optparse = OptionParser.new do |opts|
 		options[:state_random_mirrored] = !options[:state_random_mirrored]
 	end
 	opts.on('-t', '--vert-symmetry', 'Output lines will be reflected vertically') do |b|
-		options[:vert_symmetry] = !options[:vert_symmetry]
+		options[:transformation_queue] << :vert_symmetry
 	end
 	opts.on('-T', '--horiz-symmetry', 'Output lines will be reflected horizontally') do |b|
-		options[:horiz_symmetry] = !options[:horiz_symmetry]
+		options[:transformation_queue] << :horiz_symmetry
 	end
 	opts.on('-o', '--rotate NUMBER', Integer, 'Rotate by 90 degrees') do |n|
-		options[:rotations] = n.abs % 4
+		(n.abs % 4).times { options[:transformation_queue] << :rotation }
 	end
 	opts.separator nil
 	
@@ -306,7 +304,7 @@ optparse = OptionParser.new do |opts|
 		options[:wrap] = !options[:wrap]
 	end
 	opts.on('-v', '--reverse', 'Output generations in reverse order') do |b|
-		options[:reverse] = !options[:reverse]
+		options[:transformation_queue] << :reverse
 	end
 	opts.separator nil
 	
@@ -466,37 +464,39 @@ end
 
 ################################################################################
 
-# Rotate if necessary.
-options[:rotations].times do |i|
-	output_lines_by_cell = output_lines_by_cell.rotate_right
+# Set up methods for each transformation type.
+def transformation_rotation(int_array_array)
+	int_array_array.rotate_right
+end
+def transformation_reverse(int_array_array)
+	int_array_array.reverse
+end
+def transformation_vert_symmetry(int_array_array)
+	output = int_array_array
+	int_array_array.reverse[1..-1].each do |i|
+		output << i
+	end
+	output
+end
+def transformation_horiz_symmetry(int_array_array)
+	int_array_array.map do |i|
+		i[0...-1] + i.reverse
+	end
 end
 
-# Join back up to a string array for output.
-output_lines = []
-output_lines_by_cell.each do |line|
-	output_lines << line.join('')
+# options[:transformation_queue] contains names of transformation methods.
+# Loop through the queue and run each in turn.
+options[:transformation_queue].each do |m_name|
+	output_lines_by_cell =
+		method("transformation_#{m_name}").call(output_lines_by_cell)
 end
 
 ################################################################################
 
-# Line output. Handle reversal if necessary.
-array_to_output = options[:reverse] ? output_lines.reverse : output_lines
-
-# Line output. Handle vertical symmetry if necessary.
-if options[:vert_symmetry]
-	new_output = array_to_output
-	array_to_output.reverse[1..-1].each { |i| new_output << i }
-	array_to_output = new_output
-end
-
-# Line output. Handle horizontal symmetry if necessary.
-if options[:horiz_symmetry]
-	new_output = []
-	array_to_output.each do |i|
-		new_line = (i[0...-1] + i.reverse).to_s
-		new_output.push(new_line)
-	end
-	array_to_output = new_output
+# Join back up to a string array for output.
+array_to_output = []
+output_lines_by_cell.each do |line|
+	array_to_output << line.join('')
 end
 
 # Output the results.
