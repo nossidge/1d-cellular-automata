@@ -45,11 +45,13 @@ class PicFromNumbers
 	def change_text(input_text_array)
 		@input_text_array = input_text_array
 		set_dimensions()
+		@input_text_array
 	end
 	
-	def change_pixel_size(pixel_size)
-		@pixel_size = pixel_size
+	def pixel_size=(input_size)
+		@pixel_size = input_size
 		set_dimensions()
+		@pixel_size
 	end
 	
 	# This uses the LoopedArray class to cycle through colours.
@@ -217,7 +219,7 @@ if __FILE__ == $0
 	pic.base_num      = options[:base_num]
 	pic.colour_invert = options[:colour_invert]
 	pic.image_file    = options[:image_file]
-	pic.change_pixel_size(options[:pixel_size])
+	pic.pixel_size    = options[:pixel_size]
 	pic.set_colour(options[:colour_r],options[:colour_g],options[:colour_b])
 	pic.generate_image
 

@@ -67,6 +67,7 @@ options[:colour_r] = 255
 options[:colour_g] = 255
 options[:colour_b] = 255
 options[:image_file] = nil
+options[:pixel_size] = 1
 
 # List of transformations to apply to the automaton output.
 options[:transformation_queue] = []
@@ -224,7 +225,7 @@ optparse = OptionParser.new do |opts|
 	# Set specific rule(s).
 	opts.on('-u', '--rule 30,110', Array, 'Cellular automaton Rule number(s)') do |list|
 		options[:rule_number] = []
-		
+
 		# Error if an argument is not an integer.
 		list.each do |elem|
 			begin
@@ -262,7 +263,7 @@ optparse = OptionParser.new do |opts|
 					raise OptionParser::ParseError
 				end
 			end
-			
+
 		else
 			options[:state_random] = !options[:state_random]
 		end
@@ -329,6 +330,9 @@ optparse = OptionParser.new do |opts|
 	end
 	opts.on('-F', '--imagefile FILENAME', 'Specify the name of the .png file') do |s|
 		options[:image_file] = s
+	end
+	opts.on('-P', '--pixel  NUMBER', Integer, 'Size of pixels (zoom)') do |n|
+		options[:pixel_size] = n if 0 < n
 	end
 	# Colours. Make sure the arguments are integers >= 0 and < 256.
 	opts.on('-R', '--red    NUM[,NUM]', Array, 'Red component of image') do |list|
@@ -516,6 +520,8 @@ if options[:image]
 	require_relative './num_to_pic.rb'
 	pic = PicFromNumbers.new(final_output_array)
 	pic.image_file = options[:image_file] || "pic_#{cells.rule.to_a.join('_')}.png"
+	pic.image_file = options[:image_file] || "pic_#{Time.now.to_i.to_s}.png"
+	pic.pixel_size = options[:pixel_size]
 	pic.set_colour(options[:colour_r],options[:colour_g],options[:colour_b])
 	pic.generate_image
 else
