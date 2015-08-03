@@ -225,15 +225,7 @@ optparse = OptionParser.new do |opts|
 	# Set specific rule(s).
 	opts.on('-u', '--rule 30,110', Array, 'Cellular automaton Rule number(s)') do |list|
 		options[:rule_number] = []
-
-		# Error if an argument is not an integer.
-		list.each do |elem|
-			begin
-				options[:rule_number] << Integer(elem).abs
-			rescue ArgumentError => e
-				raise OptionParser::ParseError
-			end
-		end
+		options[:rule_number] = each_to_int(list, OptionParser::ParseError)
 	end
 	
 	opts.on('-U', '--rulecool', "Use a random 'cool' Rule. These are uniform and pretty") do |b|
@@ -253,17 +245,7 @@ optparse = OptionParser.new do |opts|
 	opts.on('-r', '--random [1,2,0]', Array, 'Randomise the initial state') do |list|
 		if list
 			options[:state_random] = true
-			options[:state_random_prob] = []
-
-			# Error if an argument is not an integer.
-			list.each do |elem|
-				begin
-					options[:state_random_prob] << Integer(elem).abs
-				rescue ArgumentError => e
-					raise OptionParser::ParseError
-				end
-			end
-
+			options[:state_random_prob] = each_to_int(list, OptionParser::ParseError)
 		else
 			options[:state_random] = !options[:state_random]
 		end
