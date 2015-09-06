@@ -5,8 +5,9 @@
 # Common methods. I should wrap this in a module...
 ################################################################################
 
-# Convert an input array to Integer, and raise an error if not possible.
-def each_to_int(input_array, error_to_raise)
+# Convert each element in an input array to Integer, and raise an error if the
+#   conversion to Int is not possible for any element.
+def each_to_int(input_array, error_to_raise=TypeError)
 	output_array = []
 	input_array.each do |elem|
 		begin
