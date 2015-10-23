@@ -32,6 +32,7 @@ class PicFromNumbers
 	
 	attr_reader :input_text_array
 	attr_reader :pixel_size
+	attr_reader :metadata
 	
   def initialize(input_text_array)
 		@colour_invert = false
@@ -84,6 +85,16 @@ class PicFromNumbers
 		@y_length = @pixel_size * @input_text_array.length
 	end
 	
+	# Set one or more metadata key/value pairs.
+	def metadata=(metadata_hash)
+		if metadata_hash.is_a? Hash
+			@metadata = metadata_hash
+		else
+			raise TypeError, 'A hash is required'
+		end
+	end
+	
+	# Create the image to file.
 	def generate_image
 		set_dimensions()
 		
@@ -127,6 +138,13 @@ class PicFromNumbers
 				i_char += @pixel_size
 			end
 			i_line += @pixel_size
+		end
+		
+		# Add metadata if necessary.
+		if @metadata
+			@metadata.each do |key, value|
+				png.metadata[key.to_s] = value.to_s
+			end
 		end
 
 		# Save to disk.
@@ -221,6 +239,7 @@ if __FILE__ == $0
 	pic.image_file    = options[:image_file]
 	pic.pixel_size    = options[:pixel_size]
 	pic.set_colour(options[:colour_r],options[:colour_g],options[:colour_b])
+#	pic.metadata      = { :meta_key => 'Test example string' }
 	pic.generate_image
 
   ##############################################################################
