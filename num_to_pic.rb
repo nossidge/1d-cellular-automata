@@ -214,7 +214,6 @@ if __FILE__ == $0
 		opts.on('-m', '--metadata  STRING', 'Hash of metadata for the .png') do |s|
 			begin
 				options[:metadata] = s.to_h
-				puts options[:metadata]
 			rescue
 				raise OptionParser::ParseError, 'Argument must be in the form "key1:val1;key2:val2"'
 			end
