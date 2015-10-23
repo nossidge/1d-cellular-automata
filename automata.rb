@@ -68,6 +68,7 @@ options[:colour_g] = 255
 options[:colour_b] = 255
 options[:image_file] = nil
 options[:pixel_size] = 1
+options[:metadata] = nil
 
 # List of transformations to apply to the automaton output.
 options[:transformation_queue] = []
@@ -331,13 +332,25 @@ optparse = OptionParser.new do |opts|
 	end
 	opts.separator nil
 	
-	# Help stuff.
+	# Metadata for the png. This needs to be a string in the form "key1:val1;key2:val2".
+	# This will be transformed into a hash.
+	opts.on('--metadata STRING', 'Hash of metadata for the .png') do |s|
+		begin
+			options[:metadata] = s.to_h
+		rescue
+			raise OptionParser::ParseError, 'Argument must be in the form "key1:val1;key2:val2"'
+		end
+	end
+	opts.separator nil
+	
+	# Help output.
 	opts.on_tail('-h', '--help', 'Display this help screen' ) do
 		puts opts, nil
 		exit 0
 	end
 end
 
+# Parse the options and show errors on failure.
 begin
 	optparse.parse!(ARGV)
 rescue OptionParser::ParseError => e
@@ -505,6 +518,7 @@ if options[:image]
 	pic.image_file = options[:image_file] || "pic_#{Time.now.to_i.to_s}.png"
 	pic.pixel_size = options[:pixel_size]
 	pic.set_colour(options[:colour_r],options[:colour_g],options[:colour_b])
+	pic.metadata = options[:metadata]
 	pic.generate_image
 else
 	puts final_output_array
