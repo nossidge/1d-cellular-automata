@@ -86,8 +86,9 @@ class PicFromNumbers
 	end
 	
 	# Set one or more metadata key/value pairs.
+	# Allow Hash or nil only.
 	def metadata=(metadata_hash)
-		if metadata_hash.is_a? Hash
+		if metadata_hash.nil? or metadata_hash.is_a? Hash
 			@metadata = metadata_hash
 		else
 			raise TypeError, 'A hash is required'
@@ -171,6 +172,8 @@ if __FILE__ == $0
 	options[:colour_r] = [255]
 	options[:colour_g] = [255]
 	options[:colour_b] = [255]
+	
+	options[:metadata] = nil
 
 	# Get all of the command-line options.
 	optparse = OptionParser.new do |opts|
@@ -178,39 +181,53 @@ if __FILE__ == $0
 		# Set a banner, displayed at the top of the help screen.
 		opts.banner = "Usage:  automata.rb -s'0123456789' | num_to_pic.rb [options]"
 
-		opts.on('-p', '--pixel  NUMBER', Integer, 'Size of pixels (zoom)') do |n|
+		# Easy to deal with options.
+		opts.on('-p', '--pixel     NUMBER', Integer, 'Size of pixels (zoom)') do |n|
 			options[:pixel_size] = n if 0 < n
 		end
-		opts.on('-b', '--base   NUMBER', Integer, 'Base number') do |n|
+		opts.on('-b', '--base      NUMBER', Integer, 'Base number') do |n|
 			options[:base_num] = n if 0 < n
 		end
 		opts.on('-i', '--invert', 'Invert the image colours') do |b|
 			options[:colour_invert] = b
 		end
-		opts.on('-f', '--file   STRING', 'File name for the resulting .png') do |s|
+		opts.on('-f', '--file      STRING', 'File name for the resulting .png') do |s|
 			options[:image_file] = s
 		end
 		
 		# Colours. Make sure the arguments are integers >= 0 and < 256.
-		opts.on('-R', '--red    NUM[,NUM]', Array, 'Red component of image') do |list|
+		opts.on('-R', '--red       NUM[,NUM]', Array, 'Red component of image') do |list|
 			options[:colour_r] =
 				each_to_int(list, OptionParser::ParseError).map { |i| i = i.abs % 256 }
 		end
-		opts.on('-G', '--green  NUM[,NUM]', Array, 'Green component of image') do |list|
+		opts.on('-G', '--green     NUM[,NUM]', Array, 'Green component of image') do |list|
 			options[:colour_g] =
 				each_to_int(list, OptionParser::ParseError).map { |i| i = i.abs % 256 }
 		end
-		opts.on('-B', '--blue   NUM[,NUM]', Array, 'Blue component of image') do |list|
+		opts.on('-B', '--blue      NUM[,NUM]', Array, 'Blue component of image') do |list|
 			options[:colour_b] =
 				each_to_int(list, OptionParser::ParseError).map { |i| i = i.abs % 256 }
 		end
 		
+		# Metadata for the png. This needs to be a string in the form "key1:val1;key2:val2".
+		# This will be transformed into a hash.
+		opts.on('-m', '--metadata  STRING', 'Hash of metadata for the .png') do |s|
+			begin
+				options[:metadata] = s.to_h
+				puts options[:metadata]
+			rescue
+				raise OptionParser::ParseError, 'Argument must be in the form "key1:val1;key2:val2"'
+			end
+		end
+		
+		# Help output.
 		opts.on('-h', '--help', 'Display this help screen' ) do
 			puts opts
 			exit
 		end
 	end
 	
+	# Parse the options and show errors on failure.
 	begin
 		optparse.parse!(ARGV)
 	rescue OptionParser::ParseError => e
@@ -239,7 +256,7 @@ if __FILE__ == $0
 	pic.image_file    = options[:image_file]
 	pic.pixel_size    = options[:pixel_size]
 	pic.set_colour(options[:colour_r],options[:colour_g],options[:colour_b])
-#	pic.metadata      = { :meta_key => 'Test example string' }
+	pic.metadata      = options[:metadata]
 	pic.generate_image
 
   ##############################################################################
