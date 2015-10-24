@@ -23,6 +23,28 @@ end
 
 ################################################################################
 
+# Return a random mirrored string, like a palindrome.
+def random_mirrored_string(char_array, length,
+		centred=false, full_length=80, buffer_char='0')
+
+	# If the length is odd, start with one initial character.
+	buffer = (length % 2 != 0) ? char_array.sample.to_s : ''
+
+	# Start in the middle of the string, and iterate to the edges.
+	(length / 2).times do
+		rand_char = char_array.sample.to_s
+		buffer = rand_char + buffer + rand_char
+	end
+
+	# Write to the centre of the string, if necessary.
+	# Pad the random portion between chars of '0' by default.
+	buffer = buffer.center(full_length,buffer_char) if centred
+
+	buffer
+end
+
+################################################################################
+
 options = {}
 
 # Just to make sure it works on my Windows env.
@@ -408,23 +430,13 @@ else
 	loops = options[:initial_state_length] ? options[:initial_state_length] : options[:cell_count]
 	state_string = ''
 
-	# If it's mirrored we need to do different stuff.
+	# If it's mirrored, we need to make sure the string is a palindrome.
 	if options[:state_random_mirrored]
-
-		# If the length is odd.
-		isOdd = loops % 2 == 0 ? false : true
-		loops = loops / 2
-		state_string = state_posibilites.sample.to_s if isOdd
-
-		# Start from the middle of the string, and work our way to the edge.
-		(0...loops).each do |i|
-			rand_char = state_posibilites.sample.to_s
-			state_string = rand_char + state_string + rand_char
-		end
+		state_string = random_mirrored_string(state_posibilites,loops)
 		
-	# Not mirrored.
+	# Not mirrored. Just use pick at random for each character.
 	else
-		(0...loops).each do |i|
+		(0...loops).each do
 			state_string += state_posibilites.sample.to_s
 		end
 	end
