@@ -98,6 +98,7 @@ options[:colour_g] = 255
 options[:colour_b] = 255
 options[:image_file] = nil
 options[:pixel_size] = 1
+options[:colour_invert] = false
 options[:metadata] = nil
 
 # List of transformations to apply to the automaton output.
@@ -337,7 +338,7 @@ optparse = OptionParser.new do |opts|
 	opts.separator ' '*39 + default_names_to_output.map{|i|"'#{i}'"}.join(' ')
 	opts.separator nil
 	
-	# pic stuff.
+	# Options for .png output.
 	opts.on('-I', '--image', 'Output to a picture file') do |s|
 		options[:image] = !options[:image]
 	end
@@ -347,6 +348,10 @@ optparse = OptionParser.new do |opts|
 	opts.on('-P', '--pixel  NUMBER', Integer, 'Size of pixels (zoom)') do |n|
 		options[:pixel_size] = n if 0 < n
 	end
+	opts.on('--invert', 'Invert the image colours') do |b|
+		options[:colour_invert] = false
+	end
+	
 	# Colours. Make sure the arguments are integers >= 0 and < 256.
 	opts.on('-R', '--red    NUM[,NUM]', Array, 'Red component of image') do |list|
 		options[:colour_r] =
@@ -527,6 +532,7 @@ if options[:image]
 	pic = PicFromNumbers.new(final_output_array)
 	pic.image_file = options[:image_file] || "pic_#{cells.rule.to_a.join('_')}.png"
 	pic.image_file = options[:image_file] || "pic_#{Time.now.to_i.to_s}.png"
+	pic.colour_invert = options[:colour_invert]
 	pic.pixel_size = options[:pixel_size]
 	pic.set_colour(options[:colour_r],options[:colour_g],options[:colour_b])
 	pic.metadata = options[:metadata]
