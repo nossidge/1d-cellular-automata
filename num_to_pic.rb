@@ -118,9 +118,19 @@ class PicFromNumbers
 				
 				# The colour multiplier of the cell.
 				multiplier = CHARS.index(char).to_f / @highest_num
-				colour_r = (multiplier * line_colour_r).to_i
-				colour_g = (multiplier * line_colour_g).to_i
-				colour_b = (multiplier * line_colour_b).to_i
+				
+				# Wrap in a method using a begin/rescue block.
+				# Fixes weird bug that I can't seem to replicate.
+				def try_colour(multiplier, line_colour)
+					begin
+						(multiplier * line_colour).to_i
+					rescue
+						255
+					end
+				end
+				colour_r = try_colour(multiplier,line_colour_r)
+				colour_g = try_colour(multiplier,line_colour_g)
+				colour_b = try_colour(multiplier,line_colour_b)
 				
 				# Handle inversion of colours if necessary.
 				if @colour_invert
