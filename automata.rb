@@ -349,7 +349,7 @@ optparse = OptionParser.new do |opts|
 		options[:pixel_size] = n if 0 < n
 	end
 	opts.on('--invert', 'Invert the image colours') do |b|
-		options[:colour_invert] = false
+		options[:colour_invert] = b
 	end
 	
 	# Colours. Make sure the arguments are integers >= 0 and < 256.
